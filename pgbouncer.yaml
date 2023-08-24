@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgbouncer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgbouncer
+  template:
+    metadata:
+      labels:
+        app: pgbouncer
+    spec:
+      containers:
+        - name: pgbouncer
+          image: bitnami/pgbouncer
+          ports:
+            - containerPort: 6432
+          env:
+          - name: POSTGRESQL_DATABASE
+            value: "kintshop"
+          - name: POSTGRESQL_USERNAME
+            value: "postgres"
+          - name: POSTGRESQL_PASSWORD
+            value: "kintshop123"
+          - name: POSTGRESQL_HOST
+            value: "10.110.246.108"
+          - name: POSTGRESQL_PORT
+            value: "5432"
+          - name: PGBOUNCER_PORT
+            value: "6432"
+          - name: PGBOUNCER_MAX_CLIENT_CONN
+            value: "500"
+          - name: PGBOUNCER_DATABASE
+            value: "kintshop"
+          volumeMounts:
+            - name: pgbouncer-config 
+              mountPath: /bitnami/pgbouncer/conf/
+              readOnly: true 
+          volumeMounts:
+            - name: pgbouncer-config 
+              mountPath: /etc/pgbouncer/
+              readOnly: true      
+      volumes:
+      - name: pgbouncer-config 
+        configMap:
+          name: pgbouncer-config 
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbouncer-config
+data:
+  userlist.txt: |
+    "postgres" "kintshop123"
+  pgbouncer.ini: |
+    [databases]
+    mydb = host=10.110.246.108 port=5432 dbname=kintshop user=postgres password=kintshop123
+    mydb1 = host=10.108.72.78 port=5433 dbname=kintshop user=postgres password=kintshop123
+
+    [pgbouncer]
+    listen_addr = 0.0.0.0
+    listen_port = 6432
+    auth_type = md5
+    auth_file = /etc/pgbouncer/userlist.txt
+    pidfile=/opt/bitnami/pgbouncer/tmp/pgbouncer.pid
+    logfile=/opt/bitnami/pgbouncer/logs/pgbouncer.log
+    #admin_users = postgres
+    #auth_user = postgres
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbouncer-config
+data:
+  userlist.txt: |
+    "postgres" "kintshop123"
+  pgbouncer.ini: |
+    [databases]
+    mydb = "host=10.110.246.108 dbname=kintshop user=postgres password=kintshop123"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: pgbouncer
+  labels:
+    app: pgbouncer
+spec:
+  ports:
+    - protocol: TCP
+      port: 6432
+      targetPort: 6432
+  selector:
+    app: pgbouncer
