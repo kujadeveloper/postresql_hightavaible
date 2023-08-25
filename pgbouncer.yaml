@@ -34,6 +34,8 @@ spec:
             value: "500"
           - name: PGBOUNCER_DATABASE
             value: "*******"
+          - name: PGBOUNCER_POOL_MODE
+            value: transaction
           volumeMounts:
             - name: pgbouncer-config 
               mountPath: /bitnami/pgbouncer/conf/
@@ -68,17 +70,6 @@ data:
     logfile=/opt/bitnami/pgbouncer/logs/pgbouncer.log
     #admin_users = postgres
     #auth_user = postgres
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: pgbouncer-config
-data:
-  userlist.txt: |
-    "postgres" "*******"
-  pgbouncer.ini: |
-    [databases]
-    mydb = "host=10.110.246.108 dbname=******* user=******* password=*******"
 ---
 kind: Service
 apiVersion: v1
