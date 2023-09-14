@@ -12,6 +12,13 @@ spec:
       labels:
         app: pgbouncer
     spec:
+      initContainers:
+        - name: set-permissions
+          image: busybox
+          command: ["sh", "-c", "chmod 777 -R /opt/bitnami/pgbouncer/conf/"]
+          volumeMounts:
+            - name: options
+              mountPath: /opt/bitnami/pgbouncer/conf/
       containers:
         - name: pgbouncer
           image: bitnami/pgbouncer
@@ -40,14 +47,18 @@ spec:
             - name: pgbouncer-config 
               mountPath: /bitnami/pgbouncer/conf/
               readOnly: true 
-          volumeMounts:
             - name: pgbouncer-config 
               mountPath: /etc/pgbouncer/
-              readOnly: true      
+              readOnly: true 
+            - name: pgbouncer-config
+              mountPath: /opt/bitnami/pgbouncer/conf/
       volumes:
-      - name: pgbouncer-config 
-        configMap:
-          name: pgbouncer-config 
+        - name: pgbouncer-config 
+          configMap:
+            name: pgbouncer-config
+        - name: options
+          persistentVolumeClaim:
+            claimName: pgbouncer-claim
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -55,11 +66,11 @@ metadata:
   name: pgbouncer-config
 data:
   userlist.txt: |
-    "postgres" "kintshop123"
+    "postgres" "kinthop1598524!#"
   pgbouncer.ini: |
     [databases]
-    mydb = host=10.110.246.108 port=5432 dbname=******* user=******* password=*******
-    mydb1 = host=10.108.72.78 port=5433 dbname=******* user=******* password=*******
+    *=host=10.98.171.9 port=6061 dbname=kintshop user=postgres password=kinthop1598524!#
+    *=host=10.108.33.216 port=6062 dbname=kintshop user=postgres password=kinthop1598524!#
 
     [pgbouncer]
     listen_addr = 0.0.0.0
@@ -68,8 +79,8 @@ data:
     auth_file = /etc/pgbouncer/userlist.txt
     pidfile=/opt/bitnami/pgbouncer/tmp/pgbouncer.pid
     logfile=/opt/bitnami/pgbouncer/logs/pgbouncer.log
-    #admin_users = postgres
-    #auth_user = postgres
+    admin_users = postgres
+    pool_mode = transaction
 ---
 kind: Service
 apiVersion: v1
@@ -84,3 +95,34 @@ spec:
       targetPort: 6432
   selector:
     app: pgbouncer
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: pgbouncer-volume  # Sets PV's name
+  labels:
+    type: local  # Sets PV's type to local
+    app: pgbouncer-volume
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 1Gi # Sets PV Volume
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/pgbouncer"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pgbouncer-claim  # Sets name of PVC
+  labels:
+    app: pgbouncer-claim
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteMany  # Sets read and write access
+  resources:
+    requests:
+      storage: 1Gi  # Sets volume size
+  volumeName: pgbouncer-volume
