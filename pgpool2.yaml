@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgpool-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgpool
+  template:
+    metadata:
+      labels:
+        app: pgpool
+    spec:
+      containers:
+      - name: pgpool
+        image: bitnami/pgpool:latest
+        ports:
+        - containerPort: 9999
+        env:
+          - name: PGPOOL_SR_CHECK_USER
+            value: "****"
+          - name: PGPOOL_SR_CHECK_PASSWORD
+            value: "****"
+          - name: PGPOOL_USERNAME
+            value: "****"
+          - name: PGPOOL_PASSWORD
+            value: "****"
+          - name: PGPOOL_POSTGRES_USERNAME
+            value: "****"
+          - name: PGPOOL_POSTGRES_PASSWORD
+            value: "****"
+          - name: PGPOOL_USERNAME
+            value: "****"
+          - name: PGPOOL_ADMIN_USERNAME
+            value: "****"
+          - name: PGPOOL_ADMIN_PASSWORD
+            value: "****"
+          - name: PGPOOL_BACKEND_NODES
+            value: "0:10.98.171.9:6061,1:10.108.33.216:6062"
+
+        
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgpool-config
+data:
+  pgpool.conf: |
+    listen_addresses = '*'
+    port = 9999
+    backend_hostname0 = '10.98.171.9'
+    backend_port0 = 6061
+    backend_weight0 = 1
+    backend_data_directory0 = '/data'
+    backend_flag0 = 'ALLOW_TO_FAILOVER'
+    backend_hostname1 = '10.108.33.216'
+    backend_port1 = 6062
+    backend_weight1 = 1
+    backend_data_directory1 = '/data'
+    backend_flag1 = 'ALLOW_TO_FAILOVER'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pgpool-admin-credentials
+type: Opaque
+data:
+  PGPOOL_ADMIN_USERNAME: [Base64 Encoded Username]
+  PGPOOL_ADMIN_PASSWORD: [Base64 Encoded Password]
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pgpool-replication-credentials
+type: Opaque
+data:
+  PGPOOL_SR_CHECK_USER: [Base64 Encoded Username]
+  PGPOOL_SR_CHECK_PASSWORD: [Base64 Encoded Password]
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: pgpool
+  labels:
+    app: pgpool
+spec:
+  ports:
+    - protocol: TCP
+      port: 9999
+      targetPort: 5432
+  selector:
+    app: pgpool
+  type: ClusterIP
