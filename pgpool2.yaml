@@ -36,6 +36,8 @@ spec:
             value: "****"
           - name: PGPOOL_ADMIN_PASSWORD
             value: "****"
+          - name: PGPOOL_NUM_INIT_CHILDREN
+            value: 200
           - name: PGPOOL_BACKEND_NODES
             value: "0:10.98.171.9:6061,1:10.108.33.216:6062"
 

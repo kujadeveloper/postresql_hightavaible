@@ -90,6 +90,10 @@ spec:
             value: ******
           - name: POSTGRESQL_PASSWORD
             value: ******
+          - name: POSTGRESQL_EXTRA_FLAGS
+            value: "-c work_mem=2GB -c shared_buffers=1GB"
+          - name: POSTGRESQL_MAX_CONNECTIONS
+            value: '300'
         ports:
         - containerPort: 5432
         volumeMounts:
@@ -140,6 +144,10 @@ spec:
             value: "******"
           - name: POSTGRESQL_MASTER_PORT_NUMBER
             value: "5432"
+          - name: POSTGRESQL_EXTRA_FLAGS
+            value: "-c work_mem=2GB -c shared_buffers=1GB"
+          - name: POSTGRESQL_MAX_CONNECTIONS
+            value: '300'
         ports:
         - containerPort: 5432
         volumeMounts:
