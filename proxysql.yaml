@@ -26,7 +26,7 @@ data:
     (
         {
             username = "postgres",
-            password = "kinthop1598524!#",
+            password = "*******",
             default_hostgroup = 10,
             transaction_persistent = 0
         }
